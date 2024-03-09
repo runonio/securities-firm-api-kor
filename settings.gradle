@@ -1,0 +1,6 @@
+rootProject.name = 'securities-firm-api-kor'
+include 'modules:koreainvestment'
+findProject(':modules:koreainvestment')?.name = 'koreainvestment'
+include 'modules:api-kor'
+findProject(':modules:api-kor')?.name = 'api-kor'
+
