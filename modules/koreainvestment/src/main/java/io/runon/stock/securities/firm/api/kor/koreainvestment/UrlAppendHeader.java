@@ -13,12 +13,9 @@ public class UrlAppendHeader {
     public static Map<String, Map<String, String>> makeAppendRequestPropertyMap(){
         Map<String, Map<String, String>> map = new HashMap<>();
 
-//        /uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice
         Map<String, String> inquireDailyItemchartprice = new HashMap<>();
         inquireDailyItemchartprice.put("tr_id","FHKST03010100");
         map.put("/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice", inquireDailyItemchartprice);
-
-
 
         return map;
     }
