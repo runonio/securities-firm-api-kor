@@ -11,7 +11,7 @@ repositories {
 
 dependencies {
 
-    implementation 'com.seomse.commons:commons:1.5.7'
+    implementation 'com.seomse.commons:commons:1.6.0'
     implementation 'io.runon.trading:technical-analysis:0.4.61'
 
     compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.18.30'

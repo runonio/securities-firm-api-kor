@@ -24,7 +24,7 @@ public class KoreainvestmentApiException extends RuntimeException{
 
     /**
      * 생성자
-     * @param message exception meesage
+     * @param message exception message
      */
     public KoreainvestmentApiException(String message){
         super(message);
