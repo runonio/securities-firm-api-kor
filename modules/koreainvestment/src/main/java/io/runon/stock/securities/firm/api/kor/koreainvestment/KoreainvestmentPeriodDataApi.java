@@ -1,7 +1,12 @@
 package io.runon.stock.securities.firm.api.kor.koreainvestment;
 
 import com.seomse.commons.http.HttpApiResponse;
+import com.seomse.commons.utils.time.Times;
 import io.runon.stock.securities.firm.api.kor.koreainvestment.exception.KoreainvestmentApiException;
+import io.runon.trading.TradingTimes;
+import io.runon.trading.technical.analysis.candle.TradeCandle;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.Map;
 
@@ -11,6 +16,7 @@ import java.util.Map;
  * @author macle
  */
 public class KoreainvestmentPeriodDataApi {
+
     private final KoreainvestmentApi koreainvestmentApi;
     public KoreainvestmentPeriodDataApi(KoreainvestmentApi koreainvestmentApi){
         this.koreainvestmentApi = koreainvestmentApi;
@@ -26,12 +32,12 @@ public class KoreainvestmentPeriodDataApi {
      * @param isRevisePrice 수정주가 여뷰
      * @return 결과값 jsontext
      */
-    public String getCandleJsonText(String symbol, String type, String period, String beginYmd, String endYmd, boolean isRevisePrice){
+    public String getPeriodDataJsonText(String symbol, String type, String period, String beginYmd, String endYmd, boolean isRevisePrice){
         //https://apiportal.koreainvestment.com/apiservice/apiservice-domestic-stock-quotations#L_a08c3421-e50f-4f24-b1fe-64c12f723c77
 
         koreainvestmentApi.updateAccessToken();
         String url = "/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice";
-        Map<String, String> requestHeaderMap = UrlAppendHeader.getRequestPropertyMap(url);
+        Map<String, String> requestHeaderMap = koreainvestmentApi.computeIfAbsenttPropertySingleMap(url,"tr_id","FHKST03010100");
 
         //수정주가여부
         String sendRevisePrice;
@@ -50,4 +56,58 @@ public class KoreainvestmentPeriodDataApi {
 
         return response.getMessage();
     }
+
+    public TradeCandle [] getCandles(String symbol, String type, String period, String beginYmd, String endYmd, boolean isRevisePrice){
+        String jsonText = getPeriodDataJsonText(symbol, type, period, beginYmd, endYmd, isRevisePrice);
+        return getCandles(jsonText);
+    }
+
+
+    public TradeCandle [] getCandles(String jsonText){
+
+
+
+        JSONObject object = new JSONObject(jsonText);
+        String code = object.getString("rt_cd");
+        if(!code.equals("0")){
+            if(!object.isNull("msg1")){
+                throw new KoreainvestmentApiException("rt_cd: " + code + ", message: " + object.getString("msg1"));
+            }else{
+                throw new KoreainvestmentApiException("rt_cd: " + code);
+            }
+        }
+
+
+        JSONArray array = object.getJSONArray("output2");
+
+
+
+        String dateFormat = "yyyyMMdd hh:mm";
+
+
+        int length = array.length();
+
+        int candleIndex = 0;
+        TradeCandle [] candles = new TradeCandle[length];
+
+        for (int i = length -1; i > -1 ; i--) {
+
+            JSONObject row = array.getJSONObject(i);
+
+            String ymd = row.getString("stck_bsop_date");
+
+
+            TradeCandle tradeCandle = new TradeCandle();
+            tradeCandle.setOpenTime(Times.getTime(dateFormat, ymd +" 09:00", TradingTimes.KOR_ZONE_ID));
+            tradeCandle.setCloseTime(Times.getTime(dateFormat, ymd +" 15:30", TradingTimes.KOR_ZONE_ID));
+
+
+            candles[candleIndex++] = tradeCandle;
+
+        }
+
+        return candles;
+    }
+
+
 }

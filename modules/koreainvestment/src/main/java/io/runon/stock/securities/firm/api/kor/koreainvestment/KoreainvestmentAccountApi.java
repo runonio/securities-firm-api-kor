@@ -19,11 +19,10 @@ public class KoreainvestmentAccountApi {
      * requenst
      * CANO	종합계좌번호	String	Y	8	계좌번호 체계(8-2)의 앞 8자리
      * ACNT_PRDT_CD	계좌상품코드	String	Y	2	계좌번호 체계(8-2)의 뒤 2자리
-     * AFHR_FLPR_YN	시간외단일가여부	String	Y	1	N : 기본값
-     * Y : 시간외단일가
+     * AFHR_FLPR_YN	시간외단일가여부	String	Y	1	N : 기본값, Y : 시간외단일가
+     *
      * OFL_YN	오프라인여부	String	Y	1	공란(Default)
-     * INQR_DVSN	조회구분	String	Y	2	01 : 대출일별
-     * 02 : 종목별
+     * INQR_DVSN	조회구분	String	Y	2	01 : 대출일별 02 : 종목별
      * UNPR_DVSN	단가구분	String	Y	2	01 : 기본값
      * FUND_STTL_ICLD_YN	펀드결제분포함여부	String	Y	1	N : 포함하지 않음
      * Y : 포함
@@ -98,6 +97,8 @@ public class KoreainvestmentAccountApi {
      *
      */
     public String getAccountJsonText(String accountText ){
+
+
         return null;
     }
 

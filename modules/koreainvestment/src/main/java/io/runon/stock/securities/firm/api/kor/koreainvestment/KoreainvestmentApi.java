@@ -52,6 +52,7 @@ public class KoreainvestmentApi {
     private final KoreainvestmentAccountApi accountApi;
 
 
+
     public KoreainvestmentApi(){
 
         String jsonPropertiesName = "securities_firm_kor_koreainvestment.json";
@@ -175,11 +176,46 @@ public class KoreainvestmentApi {
         return accountApi;
     }
 
-    public static void main(String[] args)  {
-        KoreainvestmentApi api = new KoreainvestmentApi();
-        String text = api.getPeriodDataApi().getCandleJsonText("000660","J","D","20220411","20220509",true);
-        System.out.println(text);
+
+    private final Map<String, Map<String, String>> urlRequestPropertyMap = new HashMap<>();
+    private final Object urlRequestPropertyLock = new Object();
+
+    public Map<String,String> computeIfAbsenttPropertySingleMap(String urlKey, String key, String value){
+        Map<String, String> map = urlRequestPropertyMap.get(urlKey);
+        if(map != null){
+            return map;
+        }
+
+        synchronized (urlRequestPropertyLock){
+            map = urlRequestPropertyMap.get(urlKey);
+            if(map != null){
+                return map;
+            }
+
+            map = makeSingleMap(key,value);
+            return map;
+        }
 
     }
+
+    public Map<String,String> getRequestPropertyMap(String urlKey){
+        return urlRequestPropertyMap.get(urlKey);
+    }
+
+    public void putRequestPropertyMap(String urlKey, Map<String,String> map){
+        synchronized (urlRequestPropertyLock){
+            if(urlRequestPropertyMap.containsKey(urlKey)){
+                return;
+            }
+            urlRequestPropertyMap.put(urlKey, map);
+        }
+    }
+
+    public Map<String,String> makeSingleMap(String key, String value){
+        Map<String, String> map = new HashMap<>();
+        map.put(key, value);
+        return map;
+    }
+
 
 }
