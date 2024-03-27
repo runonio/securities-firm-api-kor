@@ -1,4 +1,10 @@
 package io.runon.stock.securities.firm.api.kor.koreainvestment;
+
+import com.seomse.commons.http.HttpApiResponse;
+import io.runon.stock.securities.firm.api.kor.koreainvestment.exception.KoreainvestmentApiException;
+
+import java.util.Map;
+
 /**
  * 한국투자증권 계좌관련 API정리
  *  API가 많아서 정리한 클래스를 나눈다.
@@ -12,6 +18,13 @@ public class KoreainvestmentAccountApi {
         this.koreainvestmentApi = koreainvestmentApi;
     }
 
+    public String getInquireBalanceJsonText(String accountNumberValue ){
+
+        String cano = accountNumberValue.substring(0,8);
+        String acnt_prdt_cd = accountNumberValue.substring(accountNumberValue.length()-2 );
+
+        return getInquireBalanceJsonText(cano, acnt_prdt_cd, "","","02","01","","","","","");
+    }
 
     /**
      * apiportal.koreainvestment.com/apiservice/apiservice-domestic-stock#L_66c61080-674f-4c91-a0cc-db5e64e9a5e6
@@ -95,11 +108,90 @@ public class KoreainvestmentAccountApi {
      * -asst_icdc_amt	자산증감액	String	Y	19
      * -asst_icdc_erng_rt	자산증감수익율	String	Y	31	데이터 미제공
      *
+     * @param cano 종합계좌번호	String	Y	8	계좌번호 체계(8-2)의 앞 8자리
+     * @param acnt_prdt_cd 계좌상품코드	String	Y	2	계좌번호 체계(8-2)의 뒤 2자리
+     * @param afhr_flpr_yn  시간외단일가여부	String	Y	1	N : 기본값 Y : 시간외단일가
+     * @param ofl_yn 오프라인여부	String	Y	1	공란(Default)
+     * @param inqr_dvsn 조회구분	String	Y	2	01 : 대출일별 02 : 종목별
+     * @param unpr_dvsn 단가구분	String	Y	2	01 : 기본값
+     * @param fund_sttl_icld_yn 펀드결제분포함여부	String	Y	1	N : 포함하지 않음 Y : 포함
+     * @param fncg_amt_auto_rdpt_yn 융자금액자동상환여부	String	Y	1	N : 기본값
+     * @param prcs_dvsn 처리구분	String	Y	2	00 : 전일매매포함 01 : 전일매매미포함
+     * @param ctx_area_fk100 연속조회검색조건100	String	Y	100	공란 : 최초 조회시 이전 조회 Output CTX_AREA_FK100 값 : 다음페이지 조회시(2번째부터)
+     * @param ctx_area_nk100 연속조회키100	String	Y	100	공란 : 최초 조회시
+     * @return json text
      */
-    public String getAccountJsonText(String accountText ){
+    public String getInquireBalanceJsonText(String cano, String acnt_prdt_cd, String afhr_flpr_yn, String ofl_yn, String inqr_dvsn, String unpr_dvsn, String fund_sttl_icld_yn, String fncg_amt_auto_rdpt_yn
+            , String prcs_dvsn, String ctx_area_fk100, String ctx_area_nk100
+    ){
+
+        koreainvestmentApi.updateAccessToken();
+        String url = "/uapi/domestic-stock/v1/trading/inquire-balance";
+
+        String trId ;
+        if(koreainvestmentApi.isActual()){
+            trId = "TTTC8434R";
+        }else{
+            trId = "VTTC8434R";
+        }
+
+        Map<String, String> requestHeaderMap = koreainvestmentApi.computeIfAbsenttPropertySingleMap(url,"tr_id", trId);
+        String query = "?cano="+ cano +"&acnt_prdt_cd=" + acnt_prdt_cd +"&afhr_flpr_yn=" + afhr_flpr_yn +"&ofl_yn=" +ofl_yn +"&inqr_dvsn=" + inqr_dvsn + "&unpr_dvsn=" + unpr_dvsn
+                + "&fund_sttl_icld_yn=" + fund_sttl_icld_yn + "&fncg_amt_auto_rdpt_yn=" + fncg_amt_auto_rdpt_yn + "&prcs_dvsn=" + prcs_dvsn + "&ctx_area_fk100=" + ctx_area_fk100  + "&ctx_area_nk100=" + ctx_area_nk100;
+
+        HttpApiResponse response =  koreainvestmentApi.getHttpGet().getResponse(url + query, requestHeaderMap);
+        if(response.getResponseCode() != 200){
+            throw new KoreainvestmentApiException("token make fail code:" + response.getResponseCode() +", " + response.getMessage());
+        }
+        return response.getMessage();
+    }
 
 
-        return null;
+    public String getInquireAccountBalanceJsonText(String accountNumberValue ){
+        String cano = accountNumberValue.substring(0,8);
+        String acnt_prdt_cd = accountNumberValue.substring(accountNumberValue.length()-2 );
+        return getInquireAccountBalanceJsonText(cano, acnt_prdt_cd);
+    }
+
+    /**
+     * Output1	응답상세	Object Array	Y		[아래 순서대로 출력 : 19항목]
+     * 1: 주식
+     * 2: 펀드/MMW
+     * 3: 채권
+     * 4: ELS/DLS
+     * 5: WRAP
+     * 6: 신탁/퇴직연금/외화신탁
+     * 7: RP/발행어음
+     * 8: 해외주식
+     * 9: 해외채권
+     * 10: 금현물
+     * 11: CD/CP
+     * 12: 단기사채
+     * 13: 타사상품
+     * 14: 외화단기사채
+     * 15: 외화 ELS/DLS
+     * 16: 외화
+     * 17: 예수금+CMA
+     * 18: 청약자예수금
+     * 19: <합계>
+     */
+    public String getInquireAccountBalanceJsonText(String cano, String acnt_prdt_cd){
+        koreainvestmentApi.updateAccessToken();
+        String url = "/uapi/domestic-stock/v1/trading/inquire-account-balance";
+
+        Map<String, String> requestHeaderMap = koreainvestmentApi.computeIfAbsenttPropertySingleMap(url,"tr_id", "CTRP6548R");
+        String query = "?cano="+ cano +"&acnt_prdt_cd=" + acnt_prdt_cd +"&inqr_dvsn_1=&bspr_bf_dt_aply_yn=";
+
+        HttpApiResponse response =  koreainvestmentApi.getHttpGet().getResponse(url + query, requestHeaderMap);
+        if(response.getResponseCode() != 200){
+            throw new KoreainvestmentApiException("token make fail code:" + response.getResponseCode() +", " + response.getMessage());
+        }
+        return response.getMessage();
+    }
+
+    public static void main(String[] args) {
+        String tet = new KoreainvestmentApi().getAccountApi().getInquireBalanceJsonText("63669514-01");
+        System.out.println(tet);
     }
 
 

@@ -51,14 +51,14 @@ public class KoreainvestmentApi {
 
     private final KoreainvestmentAccountApi accountApi;
 
-
+    private boolean isActual ;
 
     public KoreainvestmentApi(){
 
         String jsonPropertiesName = "securities_firm_kor_koreainvestment.json";
         jsonFileProperties = JsonFilePropertiesManager.getInstance().getByName(jsonPropertiesName);
 
-        boolean isActual = Config.getBoolean("stock.securities.firm.api.kor.koreainvestment.actual", true);
+        isActual = Config.getBoolean("stock.securities.firm.api.kor.koreainvestment.actual", true);
         domain = getDomain(isActual);
 
         JsonObject paramObject = new JsonObject();
@@ -90,6 +90,14 @@ public class KoreainvestmentApi {
 
         periodDataApi = new KoreainvestmentPeriodDataApi(this);
         accountApi = new KoreainvestmentAccountApi(this);
+    }
+
+    public void setActual(boolean actual) {
+        isActual = actual;
+    }
+
+    public boolean isActual() {
+        return isActual;
     }
 
     private final Object accessTokenLock = new Object();

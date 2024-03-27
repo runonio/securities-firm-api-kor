@@ -3,11 +3,14 @@ package io.runon.stock.securities.firm.api.kor.koreainvestment;
 import com.seomse.commons.http.HttpApiResponse;
 import com.seomse.commons.utils.time.Times;
 import io.runon.stock.securities.firm.api.kor.koreainvestment.exception.KoreainvestmentApiException;
+import io.runon.trading.LockType;
+import io.runon.trading.PriceChangeType;
 import io.runon.trading.TradingTimes;
 import io.runon.trading.technical.analysis.candle.TradeCandle;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 /**
@@ -65,8 +68,6 @@ public class KoreainvestmentPeriodDataApi {
 
     public TradeCandle [] getCandles(String jsonText){
 
-
-
         JSONObject object = new JSONObject(jsonText);
         String code = object.getString("rt_cd");
         if(!code.equals("0")){
@@ -77,10 +78,7 @@ public class KoreainvestmentPeriodDataApi {
             }
         }
 
-
         JSONArray array = object.getJSONArray("output2");
-
-
 
         String dateFormat = "yyyyMMdd hh:mm";
 
@@ -100,8 +98,64 @@ public class KoreainvestmentPeriodDataApi {
             TradeCandle tradeCandle = new TradeCandle();
             tradeCandle.setOpenTime(Times.getTime(dateFormat, ymd +" 09:00", TradingTimes.KOR_ZONE_ID));
             tradeCandle.setCloseTime(Times.getTime(dateFormat, ymd +" 15:30", TradingTimes.KOR_ZONE_ID));
+            tradeCandle.setOpen(new BigDecimal(row.getString("stck_oprc")));
+            tradeCandle.setHigh(new BigDecimal(row.getString("stck_hgpr")));
+            tradeCandle.setLow(new BigDecimal(row.getString("stck_lwpr")));
+            tradeCandle.setClose(new BigDecimal(row.getString("stck_clpr")));
+            tradeCandle.setVolume(new BigDecimal(row.getString("acml_vol")));
+            tradeCandle.setTradingPrice(new BigDecimal(row.getString("acml_tr_pbmn")));
+            tradeCandle.setChange(new BigDecimal(row.getString("prdy_vrss")));
 
+            //락 유형
+            if(!row.isNull("flng_cls_code")) {
+                String clsCode = row.getString("flng_cls_code");
+                if(!clsCode.equals("00")){
+                    tradeCandle.addData("lock_code", clsCode);
 
+//                     * 01 : 권리락
+//                     * 02 : 배당락
+//                     * 03 : 분배락
+//                     * 04 : 권배락
+//                     * 05 : 중간(분기)배당락
+//                     * 06 : 권리중간배당락
+//                     * 07 : 권리분기배당락
+
+                    if(clsCode.equals("01")){
+                        tradeCandle.addData("lock_type", LockType.RIGHTS_LOCK.toString());
+                    }else if(clsCode.equals("02")){
+                        tradeCandle.addData("lock_type", LockType.DIVIDEND_LOCK.toString());
+                    }else if(clsCode.equals("03")){
+                        tradeCandle.addData("lock_type", LockType.DISTRIBUTION_LOCK.toString());
+                    }else if(clsCode.equals("04")){
+                        tradeCandle.addData("lock_type", LockType.RIGHTS_DIVIDEND_LOCK.toString());
+                    }else if(clsCode.equals("05")){
+                        tradeCandle.addData("lock_type", LockType.DIVIDEND_LOCK.toString());
+                    }else if(clsCode.equals("06")){
+                        tradeCandle.addData("lock_type", LockType.RIGHTS_DIVIDEND_LOCK.toString());
+                    }else if(clsCode.equals("07")){
+                        tradeCandle.addData("lock_type", LockType.RIGHTS_DIVIDEND_LOCK.toString());
+                    }
+                }
+            }
+            if(!row.isNull("prdy_vrss_sign")) {
+                String signValue = row.getString("prdy_vrss_sign");
+                if(signValue.equals("1")){
+                    tradeCandle.setPriceChangeType(PriceChangeType.RISE);
+                    tradeCandle.setPriceLimit(true);
+                }else if(signValue.equals("2")){
+                    tradeCandle.setPriceChangeType(PriceChangeType.RISE);
+                }else if(signValue.equals("3")){
+                    tradeCandle.setPriceChangeType(PriceChangeType.HOLD);
+                }else if(signValue.equals("4")){
+                    tradeCandle.setPriceChangeType(PriceChangeType.FALL);
+                    tradeCandle.setPriceLimit(true);
+                }else if(signValue.equals("5")){
+                    tradeCandle.setPriceChangeType(PriceChangeType.FALL);
+                }
+            }
+
+            tradeCandle.setChange();
+            tradeCandle.setEndTrade();
             candles[candleIndex++] = tradeCandle;
 
         }
