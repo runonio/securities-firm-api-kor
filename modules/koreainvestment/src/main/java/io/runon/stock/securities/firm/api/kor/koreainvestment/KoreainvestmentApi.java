@@ -10,7 +10,6 @@ import com.seomse.commons.http.HttpApiResponse;
 import com.seomse.commons.http.HttpApis;
 import com.seomse.commons.utils.GsonUtils;
 import com.seomse.commons.utils.time.Times;
-import io.runon.stock.securities.firm.api.kor.koreainvestment.exception.KoreainvestmentApiException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,16 +43,22 @@ public class KoreainvestmentApi {
 
     private final String domain;
 
-    public final HttpApi httpGet, httpPost;
+    final HttpApi httpGet, httpPost;
 
     public final HttpApi [] httpApis;
+
+    private final KoreainvestmentPeriodDataApi periodDataApi;
+
+    private final KoreainvestmentAccountApi accountApi;
+
+    private boolean isActual ;
 
     public KoreainvestmentApi(){
 
         String jsonPropertiesName = "securities_firm_kor_koreainvestment.json";
         jsonFileProperties = JsonFilePropertiesManager.getInstance().getByName(jsonPropertiesName);
 
-        boolean isActual = Config.getBoolean("stock.securities.firm.api.kor.koreainvestment.actual", true);
+        isActual = Config.getBoolean("stock.securities.firm.api.kor.koreainvestment.actual", true);
         domain = getDomain(isActual);
 
         JsonObject paramObject = new JsonObject();
@@ -83,6 +88,16 @@ public class KoreainvestmentApi {
 
         updateAccessToken();
 
+        periodDataApi = new KoreainvestmentPeriodDataApi(this);
+        accountApi = new KoreainvestmentAccountApi(this);
+    }
+
+    public void setActual(boolean actual) {
+        isActual = actual;
+    }
+
+    public boolean isActual() {
+        return isActual;
     }
 
     private final Object accessTokenLock = new Object();
@@ -140,41 +155,6 @@ public class KoreainvestmentApi {
         }
     }
 
-    /**
-     *
-     * @param symbol 종목코드
-     * @param type 시장유형 J : 주식, ETF, ETN
-     * @param period 기간유형 	D:일봉, W:주봉, M:월봉, Y:년봉
-     * @param beginYmd 시작년월일
-     * @param endYmd 끝 년월일
-     * @param isRevisePrice 수정주가 여뷰
-     * @return 결과값 jsontext
-     */
-    public String getCandleJsonText(String symbol, String type, String period, String beginYmd, String endYmd, boolean isRevisePrice){
-        //https://apiportal.koreainvestment.com/apiservice/apiservice-domestic-stock-quotations#L_a08c3421-e50f-4f24-b1fe-64c12f723c77
-
-        updateAccessToken();
-        String url = "/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice";
-        Map<String, String> requestHeaderMap = UrlAppendHeader.getRequestPropertyMap(url);
-
-        //수정주가여부
-        String sendRevisePrice;
-        if(isRevisePrice){
-            sendRevisePrice = "0";
-        }else{
-            sendRevisePrice = "1";
-        }
-
-        String query = "?fid_cond_mrkt_div_code="+ type +"&fid_input_iscd=" + symbol +"&fid_input_date_1=" + beginYmd +"&fid_input_date_2=" +endYmd +"&fid_period_div_code=" + period + "&fid_org_adj_prc=" + sendRevisePrice;
-
-        HttpApiResponse response =  httpGet.getResponse(url + query, requestHeaderMap);
-        if(response.getResponseCode() != 200){
-            throw new KoreainvestmentApiException("token make fail code:" + response.getResponseCode() +", " + response.getMessage());
-        }
-
-        return response.getMessage();
-    }
-
     public String getLastAccessTokenJson(){
         JsonObject lastToken  = jsonFileProperties.getJsonObject("last_access_token");
         if(lastToken == null){
@@ -184,11 +164,66 @@ public class KoreainvestmentApi {
     }
 
 
-    public static void main(String[] args)  {
-        KoreainvestmentApi api = new KoreainvestmentApi();
-        String text = api.getCandleJsonText("000660","J","D","20220411","20220509",true);
-        System.out.println(text);
+    public HttpApi getHttpGet() {
+        return httpGet;
+    }
+
+    public HttpApi getHttpPost() {
+        return httpPost;
+    }
+
+    public HttpApi[] getHttpApis() {
+        return httpApis;
+    }
+
+    public KoreainvestmentPeriodDataApi getPeriodDataApi() {
+        return periodDataApi;
+    }
+
+    public KoreainvestmentAccountApi getAccountApi() {
+        return accountApi;
+    }
+
+
+    private final Map<String, Map<String, String>> urlRequestPropertyMap = new HashMap<>();
+    private final Object urlRequestPropertyLock = new Object();
+
+    public Map<String,String> computeIfAbsenttPropertySingleMap(String urlKey, String key, String value){
+        Map<String, String> map = urlRequestPropertyMap.get(urlKey);
+        if(map != null){
+            return map;
+        }
+
+        synchronized (urlRequestPropertyLock){
+            map = urlRequestPropertyMap.get(urlKey);
+            if(map != null){
+                return map;
+            }
+
+            map = makeSingleMap(key,value);
+            return map;
+        }
 
     }
+
+    public Map<String,String> getRequestPropertyMap(String urlKey){
+        return urlRequestPropertyMap.get(urlKey);
+    }
+
+    public void putRequestPropertyMap(String urlKey, Map<String,String> map){
+        synchronized (urlRequestPropertyLock){
+            if(urlRequestPropertyMap.containsKey(urlKey)){
+                return;
+            }
+            urlRequestPropertyMap.put(urlKey, map);
+        }
+    }
+
+    public Map<String,String> makeSingleMap(String key, String value){
+        Map<String, String> map = new HashMap<>();
+        map.put(key, value);
+        return map;
+    }
+
 
 }
