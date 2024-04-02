@@ -10,7 +10,7 @@
   - C# 으로 구현 해야함
 
 # 개발환경
-- open jdk 21
+- open jdk 17
 
 # communication
 ### blog, homepage
@@ -22,6 +22,10 @@
 
 ### email
 - iorunon@gmail.com
+
+### cafe
+- [cafe.naver.com/radvisor](https://cafe.naver.com/radvisor)
+
 
 ## main developer
 - macle

@@ -13,3 +13,6 @@ project(':technical-analysis').projectDir = new File(settingsDir,'../../runon/tr
 
 include ':trading-data'
 project(':trading-data').projectDir = new File(settingsDir,'../../runon/trading/modules/trading-data')
+
+include ':stock-trading'
+project(':stock-trading').projectDir = new File(settingsDir,'../../runon/stock/modules/stock-trading')

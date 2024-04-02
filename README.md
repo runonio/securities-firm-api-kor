@@ -10,7 +10,7 @@
   - C# 으로 구현 해야함
 
 # 개발환경
-- open jdk 21
+- open jdk 17
 
 # communication
 ### blog, homepage
