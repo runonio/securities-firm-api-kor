@@ -2,7 +2,6 @@ package example.price;
 
 import io.runon.stock.securities.firm.api.kor.koreainvestment.KoreainvestmentApi;
 import io.runon.stock.securities.firm.api.kor.koreainvestment.KoreainvestmentPeriodDataApi;
-import io.runon.trading.data.csv.CsvCandle;
 import io.runon.trading.technical.analysis.candle.TradeCandle;
 
 /**
@@ -16,17 +15,25 @@ public class PricePeriodJsonTextOut {
 
         KoreainvestmentPeriodDataApi periodDataApi = api.getPeriodDataApi();
 
-        String text = periodDataApi.getPeriodDataJsonText("000660","J","D","20220411","20220509",true);
+        String text = periodDataApi.getPeriodDataJsonText("005930","J","D","19860101","19860201",true);
 
+        System.out.println(text);
         TradeCandle [] candles = periodDataApi.getCandles(text);
+        for(TradeCandle candle : candles){
+            System.out.println(candle);
+        }
+        System.out.println(candles.length);
 
 
-        String candleCsv = CsvCandle.value(candles[0]);
 
-        System.out.println(candleCsv);
-
-        System.out.println(candles[0]);
-        System.out.println(CsvCandle.make(candleCsv));
+//        System.out.println(candles[0]);
+//        System.out.println(candles[1]);
+//        String candleCsv = CsvCandle.value(candles[0]);
+//
+//        System.out.println(candleCsv);
+//
+//        System.out.println(candles[1]);
+//        System.out.println(CsvCandle.make(candleCsv));
 
 
 

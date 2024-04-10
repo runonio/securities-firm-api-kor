@@ -60,13 +60,35 @@ public class KoreainvestmentPeriodDataApi {
         return response.getMessage();
     }
 
+    /**
+     * 일별 신용 정보
+     * @param symbol 종복코드
+     * @param ymd 결제일자
+     * @return 결과값 json
+     */
+    public String getDailyCreditBalanceJson(String symbol, String ymd){
+
+        koreainvestmentApi.updateAccessToken();
+        String url = "/uapi/domestic-stock/v1/quotations/daily-credit-balance";
+        Map<String, String> requestHeaderMap = koreainvestmentApi.computeIfAbsenttPropertySingleMap(url,"tr_id","FHPST04760000");
+
+        String query = "?fid_cond_mrkt_div_code=J&fid_cond_scr_div_code=20476&fid_input_iscd=" + symbol +"&fid_input_date_1=" +ymd ;
+        HttpApiResponse response =  koreainvestmentApi.getHttpGet().getResponse(url + query, requestHeaderMap);
+        if(response.getResponseCode() != 200){
+            throw new KoreainvestmentApiException("token make fail code:" + response.getResponseCode() +", " + response.getMessage());
+        }
+
+        return response.getMessage();
+
+    }
+
     public TradeCandle [] getCandles(String symbol, String type, String period, String beginYmd, String endYmd, boolean isRevisePrice){
         String jsonText = getPeriodDataJsonText(symbol, type, period, beginYmd, endYmd, isRevisePrice);
         return getCandles(jsonText);
     }
 
 
-    public TradeCandle [] getCandles(String jsonText){
+    public static TradeCandle [] getCandles(String jsonText){
 
         JSONObject object = new JSONObject(jsonText);
         String code = object.getString("rt_cd");
@@ -91,6 +113,11 @@ public class KoreainvestmentPeriodDataApi {
         for (int i = length -1; i > -1 ; i--) {
 
             JSONObject row = array.getJSONObject(i);
+
+            if(row.isNull("stck_bsop_date")){
+                //상장 이전데이터를 조회할경우
+                return TradeCandle.EMPTY_CANDLES;
+            }
 
             String ymd = row.getString("stck_bsop_date");
 

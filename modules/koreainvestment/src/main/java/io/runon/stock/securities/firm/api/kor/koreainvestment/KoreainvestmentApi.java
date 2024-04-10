@@ -51,7 +51,12 @@ public class KoreainvestmentApi {
 
     private final KoreainvestmentAccountApi accountApi;
 
+    private final KoreainvestmentMarketApi marketApi;
+
     private boolean isActual ;
+
+    private long sleepTime = Config.getLong("stock.securities.firm.api.sleep.time", 200L);
+
 
     public KoreainvestmentApi(){
 
@@ -90,6 +95,15 @@ public class KoreainvestmentApi {
 
         periodDataApi = new KoreainvestmentPeriodDataApi(this);
         accountApi = new KoreainvestmentAccountApi(this);
+        marketApi = new KoreainvestmentMarketApi(this);
+    }
+
+    public void setSleepTime(long sleepTime) {
+        this.sleepTime = sleepTime;
+    }
+
+    public long getSleepTime() {
+        return sleepTime;
     }
 
     public void setActual(boolean actual) {
@@ -184,6 +198,9 @@ public class KoreainvestmentApi {
         return accountApi;
     }
 
+    public KoreainvestmentMarketApi getMarketApi() {
+        return marketApi;
+    }
 
     private final Map<String, Map<String, String>> urlRequestPropertyMap = new HashMap<>();
     private final Object urlRequestPropertyLock = new Object();
@@ -225,5 +242,10 @@ public class KoreainvestmentApi {
         return map;
     }
 
+    public void sleep(){
+        try {
+            Thread.sleep(sleepTime);
+        }catch (Exception ignore){}
+    }
 
 }

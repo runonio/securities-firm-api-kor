@@ -1,5 +1,7 @@
 # api-kor
-한국 증권사 모듈
+한국 증권사 모듈 공통부분 정리
+
+한국투자증권 부터 지원예정으로 증권사 모듈이 많아질 경우 사용되는 모듈
 
 ## rest api 를 제공하는 증권사
 - 한국 투자 증권
@@ -14,8 +16,8 @@
 
 # communication
 ### blog, homepage
-- [github.com/runonio](https://github.com/runonio)
 - [runon.io](https://runon.io)
+- [github.com/runonio](https://github.com/runonio)
 - [github.com/seomse](https://github.com/seomse)
 - [www.seomse.com](https://www.seomse.com/)
 
@@ -25,6 +27,12 @@
 
 ### cafe
 - [cafe.naver.com/radvisor](https://cafe.naver.com/radvisor)
+
+
+### talk
+- 로보어드바이저, 시스템트레이딩, 퀀트 단톡방
+  - https://open.kakao.com/o/g6vzOKqb
+  - 참여코드: runon
 
 
 ## main developer
