@@ -11,7 +11,7 @@ import io.runon.trading.technical.analysis.candle.TradeCandle;
  */
 public class PricePeriodJsonTextOut {
     public static void main(String[] args) {
-        KoreainvestmentApi api = new KoreainvestmentApi();
+        KoreainvestmentApi api = KoreainvestmentApi.getInstance();
 
         KoreainvestmentPeriodDataApi periodDataApi = api.getPeriodDataApi();
 
@@ -23,7 +23,6 @@ public class PricePeriodJsonTextOut {
             System.out.println(candle);
         }
         System.out.println(candles.length);
-
 
 
 //        System.out.println(candles[0]);

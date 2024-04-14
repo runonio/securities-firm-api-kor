@@ -9,7 +9,7 @@ import io.runon.stock.securities.firm.api.kor.koreainvestment.KoreainvestmentPer
  */
 public class StockDailyCreditBalance {
     public static void main(String[] args) {
-        KoreainvestmentApi api = new KoreainvestmentApi();
+        KoreainvestmentApi api = KoreainvestmentApi.getInstance();
 
         KoreainvestmentPeriodDataApi periodDataApi = api.getPeriodDataApi();
         String text = periodDataApi.getDailyCreditBalanceJson("005930","20240404");

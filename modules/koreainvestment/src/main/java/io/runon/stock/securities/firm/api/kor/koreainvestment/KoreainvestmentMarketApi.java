@@ -1,8 +1,10 @@
 package io.runon.stock.securities.firm.api.kor.koreainvestment;
 
+import com.seomse.commons.callback.StrCallback;
 import com.seomse.commons.http.HttpApiResponse;
 import com.seomse.commons.utils.time.YmdUtil;
 import io.runon.stock.securities.firm.api.kor.koreainvestment.exception.KoreainvestmentApiException;
+import io.runon.trading.closed.days.ClosedDaysCallback;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -15,7 +17,7 @@ import java.util.Map;
  * API가 많아서 정리한 클래스를 나눈다.
  * @author macle
  */
-public class KoreainvestmentMarketApi {
+public class KoreainvestmentMarketApi implements ClosedDaysCallback {
     private final KoreainvestmentApi koreainvestmentApi;
     public KoreainvestmentMarketApi(KoreainvestmentApi koreainvestmentApi){
         this.koreainvestmentApi = koreainvestmentApi;
@@ -38,9 +40,8 @@ public class KoreainvestmentMarketApi {
         return response.getMessage();
     }
 
-    public String [] getClosedDays(String beginYmd, String endYmd){
 
-        List<String> list = new ArrayList<>();
+    public void callbackClosedDays(String beginYmd, String endYmd, StrCallback callback){
 
         String baseYmd = beginYmd;
 
@@ -70,7 +71,7 @@ public class KoreainvestmentMarketApi {
 
                 boolean isClosed = row.getString("opnd_yn").equalsIgnoreCase("N");
                 if(isClosed){
-                    list.add(ymd);
+                    callback.callback(ymd);
                 }
 
                 baseYmd = ymd;
@@ -81,7 +82,14 @@ public class KoreainvestmentMarketApi {
                 koreainvestmentApi.sleep();
             }
         }
+    }
 
+    public String [] getClosedDays(String beginYmd, String endYmd){
+
+        List<String> list = new ArrayList<>();
+
+        StrCallback strCallback = list::add;
+        callbackClosedDays(beginYmd, endYmd, strCallback);
         String [] days = list.toArray(new String[0]);
         list.clear();
 
@@ -90,7 +98,7 @@ public class KoreainvestmentMarketApi {
 
 
     public static void main(String[] args) {
-        KoreainvestmentApi api = new KoreainvestmentApi();
+        KoreainvestmentApi api = KoreainvestmentApi.getInstance();
 
         KoreainvestmentMarketApi marketApi = api.getMarketApi();
 //        System.out.println(marketApi.getClosedDaysJson("2022"));
