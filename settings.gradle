@@ -4,15 +4,8 @@ findProject(':modules:koreainvestment')?.name = 'koreainvestment'
 include 'modules:api-kor'
 findProject(':modules:api-kor')?.name = 'api-kor'
 
-
 include ':trading'
 project(':trading').projectDir = new File(settingsDir,'../../runon/trading/modules/trading')
-
-include ':technical-analysis'
-project(':technical-analysis').projectDir = new File(settingsDir,'../../runon/trading/modules/technical-analysis')
-
-include ':trading-data'
-project(':trading-data').projectDir = new File(settingsDir,'../../runon/trading/modules/trading-data')
 
 include ':stock-trading'
 project(':stock-trading').projectDir = new File(settingsDir,'../../runon/stock/modules/stock-trading')

@@ -18,7 +18,7 @@ public class PricePeriodJsonFileRead {
 //        System.out.println(text);
 
 
-        KoreainvestmentApi api = new KoreainvestmentApi();
+        KoreainvestmentApi api = KoreainvestmentApi.getInstance();
         TradeCandle [] candles = api.getPeriodDataApi().getCandles(text);
 
         for(TradeCandle candle : candles){

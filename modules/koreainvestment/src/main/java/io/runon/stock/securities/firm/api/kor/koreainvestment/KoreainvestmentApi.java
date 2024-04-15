@@ -10,6 +10,7 @@ import com.seomse.commons.http.HttpApiResponse;
 import com.seomse.commons.http.HttpApis;
 import com.seomse.commons.utils.GsonUtils;
 import com.seomse.commons.utils.time.Times;
+import io.runon.trading.closed.days.ClosedDaysFileOut;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,17 +19,19 @@ import java.util.Map;
  * @author macle
  */
 public class KoreainvestmentApi {
-    //실전 투자
-    private static final String ACTUAL_DOMAIN = "https://openapi.koreainvestment.com:9443";
-    
-    //모의 투자
-    private static final String SIMULATED_DOMAIN ="https://openapivts.koreainvestment.com:29443";
 
     private static final KoreainvestmentApi instance = new KoreainvestmentApi();
 
     public static KoreainvestmentApi getInstance(){
         return instance;
     }
+
+    //실전 투자
+    private static final String ACTUAL_DOMAIN = "https://openapi.koreainvestment.com:9443";
+    
+    //모의 투자
+    private static final String SIMULATED_DOMAIN ="https://openapivts.koreainvestment.com:29443";
+
 
     private final String key = Config.getConfig("stock.securities.firm.api.kor.koreainvestment.key");
     private final String secretKey = Config.getConfig("stock.securities.firm.api.kor.koreainvestment.secret.key");
@@ -51,9 +54,17 @@ public class KoreainvestmentApi {
 
     private final KoreainvestmentAccountApi accountApi;
 
+    private final KoreainvestmentMarketApi marketApi;
+
     private boolean isActual ;
 
-    public KoreainvestmentApi(){
+    private long sleepTime = Config.getLong("stock.securities.firm.api.sleep.time", 70L);
+
+    private long candleOutSleep = Config.getLong("stock.securities.firm.api.candle.out.time", 1000L);
+
+    private final ClosedDaysFileOut closedDaysFileOut;
+
+    private KoreainvestmentApi(){
 
         String jsonPropertiesName = "securities_firm_kor_koreainvestment.json";
         jsonFileProperties = JsonFilePropertiesManager.getInstance().getByName(jsonPropertiesName);
@@ -90,6 +101,21 @@ public class KoreainvestmentApi {
 
         periodDataApi = new KoreainvestmentPeriodDataApi(this);
         accountApi = new KoreainvestmentAccountApi(this);
+        marketApi = new KoreainvestmentMarketApi(this);
+
+        closedDaysFileOut = new ClosedDaysFileOut(marketApi);
+    }
+
+    public void closedDaysOut(){
+        closedDaysFileOut.out();
+    }
+
+    public void setSleepTime(long sleepTime) {
+        this.sleepTime = sleepTime;
+    }
+
+    public long getSleepTime() {
+        return sleepTime;
     }
 
     public void setActual(boolean actual) {
@@ -184,6 +210,9 @@ public class KoreainvestmentApi {
         return accountApi;
     }
 
+    public KoreainvestmentMarketApi getMarketApi() {
+        return marketApi;
+    }
 
     private final Map<String, Map<String, String>> urlRequestPropertyMap = new HashMap<>();
     private final Object urlRequestPropertyLock = new Object();
@@ -223,6 +252,18 @@ public class KoreainvestmentApi {
         Map<String, String> map = new HashMap<>();
         map.put(key, value);
         return map;
+    }
+
+    public void sleep(){
+        try {
+            Thread.sleep(sleepTime);
+        }catch (Exception ignore){}
+    }
+
+    public void candleOutSleep(){
+        try {
+            Thread.sleep(candleOutSleep);
+        }catch (Exception ignore){}
     }
 
 

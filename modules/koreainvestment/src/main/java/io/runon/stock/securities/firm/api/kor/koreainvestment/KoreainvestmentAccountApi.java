@@ -190,7 +190,7 @@ public class KoreainvestmentAccountApi {
     }
 
     public static void main(String[] args) {
-        String tet = new KoreainvestmentApi().getAccountApi().getInquireBalanceJsonText("63669514-01");
+        String tet = KoreainvestmentApi.getInstance().getAccountApi().getInquireBalanceJsonText("63669514-01");
         System.out.println(tet);
     }
 
