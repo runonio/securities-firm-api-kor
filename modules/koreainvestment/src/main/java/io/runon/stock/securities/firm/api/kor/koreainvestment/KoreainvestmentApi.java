@@ -58,8 +58,9 @@ public class KoreainvestmentApi {
 
     private boolean isActual ;
 
-    private long sleepTime = Config.getLong("stock.securities.firm.api.sleep.time", 200L);
+    private long sleepTime = Config.getLong("stock.securities.firm.api.sleep.time", 70L);
 
+    private long candleOutSleep = Config.getLong("stock.securities.firm.api.candle.out.time", 1000L);
 
     private final ClosedDaysFileOut closedDaysFileOut;
 
@@ -258,5 +259,12 @@ public class KoreainvestmentApi {
             Thread.sleep(sleepTime);
         }catch (Exception ignore){}
     }
+
+    public void candleOutSleep(){
+        try {
+            Thread.sleep(candleOutSleep);
+        }catch (Exception ignore){}
+    }
+
 
 }

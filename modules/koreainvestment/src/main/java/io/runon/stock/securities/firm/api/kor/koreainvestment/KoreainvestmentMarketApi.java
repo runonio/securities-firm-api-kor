@@ -59,7 +59,7 @@ public class KoreainvestmentMarketApi implements ClosedDaysCallback {
 
                 String ymd = row.getString("bass_dt");
                 if(YmdUtil.compare(ymd, beginYmd) < 0){
-                    baseYmd = ymd;
+                    baseYmd = YmdUtil.getYmd(ymd,1);
                     continue ;
                 }
 
@@ -74,8 +74,12 @@ public class KoreainvestmentMarketApi implements ClosedDaysCallback {
                     callback.callback(ymd);
                 }
 
-                baseYmd = ymd;
+                baseYmd = YmdUtil.getYmd(ymd,1);
                 if(compare ==  0 ){
+                    break outer;
+                }
+
+                if(YmdUtil.compare(baseYmd ,endYmd) > 0){
                     break outer;
                 }
                 //너무 잦은 호출을 방지하기위한 조건

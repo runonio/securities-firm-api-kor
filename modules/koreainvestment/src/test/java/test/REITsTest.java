@@ -10,13 +10,13 @@ import io.runon.trading.technical.analysis.candle.TradeCandle;
  */
 public class REITsTest {
     public static void main(String[] args) {
-        KoreainvestmentApi api = new KoreainvestmentApi();
+        KoreainvestmentApi api = KoreainvestmentApi.getInstance();
 
         KoreainvestmentPeriodDataApi periodDataApi = api.getPeriodDataApi();
 
-        String text = periodDataApi.getPeriodDataJsonText("350520","J","D","20240301","20240401",true);
+        String text = periodDataApi.getPeriodDataJsonText("350520","D","20240301","20240401",true);
 
-        TradeCandle[] candles = periodDataApi.getCandles(text);
+        TradeCandle[] candles = KoreainvestmentPeriodDataApi.getCandles(text);
 
         System.out.println(candles[0]);
 
