@@ -3,6 +3,7 @@ package io.runon.stock.securities.firm.api.kor.koreainvestment;
 import com.google.gson.JsonObject;
 import com.seomse.commons.exception.ParseRuntimeException;
 import com.seomse.commons.utils.GsonUtils;
+import com.seomse.commons.utils.time.Times;
 import io.runon.trading.TradingTimes;
 import lombok.Data;
 
@@ -40,8 +41,9 @@ public class AccessToken {
 
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         format.setTimeZone(TimeZone.getTimeZone(TradingTimes.KOR_ZONE_ID));
+        // 10분미리 종료시켜서 새로발급
         try {
-            expiredTime = format.parse(expiredTimeText).getTime();
+            expiredTime = format.parse(expiredTimeText).getTime() - Times.MINUTE_10;
         } catch (ParseException e) {
             throw new ParseRuntimeException(e);
         }

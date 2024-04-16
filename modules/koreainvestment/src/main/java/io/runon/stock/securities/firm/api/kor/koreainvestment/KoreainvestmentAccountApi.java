@@ -2,7 +2,9 @@ package io.runon.stock.securities.firm.api.kor.koreainvestment;
 
 import com.seomse.commons.http.HttpApiResponse;
 import io.runon.stock.securities.firm.api.kor.koreainvestment.exception.KoreainvestmentApiException;
+import org.json.JSONObject;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 /**
@@ -145,7 +147,17 @@ public class KoreainvestmentAccountApi {
         }
         return response.getMessage();
     }
+    public BigDecimal getD2Cash(String accountNumberValue){
+        String jsonText = getInquireBalanceJsonText(accountNumberValue);
+        return  parsingD2Cash(jsonText);
+    }
 
+
+    public BigDecimal parsingD2Cash(String jsonText){
+        JSONObject jsonObject = new JSONObject(jsonText);
+        jsonObject = jsonObject.getJSONArray("output2").getJSONObject(0);
+        return jsonObject.getBigDecimal("prvs_rcdl_excc_amt");
+    }
 
     public String getInquireAccountBalanceJsonText(String accountNumberValue ){
         String cano = accountNumberValue.substring(0,8);
@@ -189,10 +201,6 @@ public class KoreainvestmentAccountApi {
         return response.getMessage();
     }
 
-    public static void main(String[] args) {
-        String tet = KoreainvestmentApi.getInstance().getAccountApi().getInquireBalanceJsonText("63669514-01");
-        System.out.println(tet);
-    }
 
 
 }

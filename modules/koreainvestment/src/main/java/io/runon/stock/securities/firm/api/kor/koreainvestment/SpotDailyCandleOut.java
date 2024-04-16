@@ -1,9 +1,10 @@
 package io.runon.stock.securities.firm.api.kor.koreainvestment;
 
-import com.seomse.commons.config.Config;
+import com.seomse.commons.utils.ExceptionUtil;
 import com.seomse.commons.utils.time.Times;
 import com.seomse.commons.utils.time.YmdUtil;
 import io.runon.stock.trading.Stock;
+import io.runon.stock.trading.StockCandles;
 import io.runon.stock.trading.Stocks;
 import io.runon.trading.CountryCode;
 import io.runon.trading.TradingTimes;
@@ -49,11 +50,19 @@ public class SpotDailyCandleOut {
         };
 
         Stock [] stocks = Stocks.getStocks(exchanges);
+        StockCandles.sortUseLastOpenTime(stocks, CountryCode.kOR, "1d");
         for(Stock stock : stocks){
-            out(stock,  CountryCode.kOR);
+            try {
+                //같은 데이터를 호출하면 호출 제한이 걸리는 경우가 있다 전체 캔들을 내릴때는 예외처리를 강제해서 멈추지 않는 로직을 추가
+                out(stock, CountryCode.kOR);
+            }catch (Exception e){
+                try{
+                    Thread.sleep(5000L);
+                }catch (Exception ignore){}
+                log.error(ExceptionUtil.getStackTrace(e) +"\n" + stock);
+            }
         }
     }
-
 
     /**
      * 상장 시점부터 내릴 수 있는 전체 정보를 내린다.
@@ -83,8 +92,6 @@ public class SpotDailyCandleOut {
         String fileSeparator = FileSystems.getDefault().getSeparator();
 
         String filesDirPath = CandleDataUtils.getStockSpotCandlePath(countryCode)+fileSeparator+stock.getStockId()+fileSeparator+"1d";
-
-
 
         long lastOpenTime = CsvTimeFile.getLastOpenTime(filesDirPath);
 
