@@ -4,11 +4,10 @@ import com.seomse.commons.utils.ExceptionUtil;
 import com.seomse.commons.utils.time.Times;
 import com.seomse.commons.utils.time.YmdUtil;
 import io.runon.stock.trading.Stock;
-import io.runon.stock.trading.StockCandles;
 import io.runon.stock.trading.Stocks;
+import io.runon.stock.trading.candle.StockCandles;
 import io.runon.trading.CountryCode;
 import io.runon.trading.TradingTimes;
-import io.runon.trading.data.candle.CandleDataUtils;
 import io.runon.trading.data.csv.CsvCandle;
 import io.runon.trading.data.csv.CsvCandleOut;
 import io.runon.trading.data.csv.CsvTimeFile;
@@ -50,7 +49,7 @@ public class SpotDailyCandleOut {
         };
 
         Stock [] stocks = Stocks.getStocks(exchanges);
-        StockCandles.sortUseLastOpenTime(stocks, CountryCode.kOR, "1d");
+        StockCandles.sortUseLastOpenTimeParallel(stocks, CountryCode.kOR, "1d");
         for(Stock stock : stocks){
             try {
                 //같은 데이터를 호출하면 호출 제한이 걸리는 경우가 있다 전체 캔들을 내릴때는 예외처리를 강제해서 멈추지 않는 로직을 추가
@@ -91,7 +90,7 @@ public class SpotDailyCandleOut {
 
         String fileSeparator = FileSystems.getDefault().getSeparator();
 
-        String filesDirPath = CandleDataUtils.getStockSpotCandlePath(countryCode)+fileSeparator+stock.getStockId()+fileSeparator+"1d";
+        String filesDirPath = StockCandles.getStockSpotCandlePath(countryCode)+fileSeparator+stock.getStockId()+fileSeparator+"1d";
 
         long lastOpenTime = CsvTimeFile.getLastOpenTime(filesDirPath);
 

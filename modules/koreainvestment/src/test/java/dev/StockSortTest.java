@@ -1,8 +1,9 @@
 package dev;
 
+import com.seomse.commons.utils.time.TimeUtil;
 import io.runon.stock.trading.Stock;
-import io.runon.stock.trading.StockCandles;
 import io.runon.stock.trading.Stocks;
+import io.runon.stock.trading.candle.StockCandles;
 import io.runon.trading.CountryCode;
 
 /**
@@ -20,13 +21,19 @@ public class StockSortTest {
 
         System.out.println(stocks[0]);
         System.out.println(stocks[1]);
-        StockCandles.sortUseLastOpenTime(stocks, CountryCode.kOR, "1d");
 
+        long sortBeginTime = System.currentTimeMillis();
+        StockCandles.sortUseLastOpenTimeParallel(stocks, CountryCode.kOR, "1d");
 
+        System.out.println(TimeUtil.getTimeValue(System.currentTimeMillis() - sortBeginTime));
         System.out.println("-------------------------");
+
 
 
         System.out.println(stocks[0]);
         System.out.println(stocks[1]);
+
+
+
     }
 }
